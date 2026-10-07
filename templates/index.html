@@ -1,0 +1,19 @@
+﻿{% extends "base.html" %}
+{% block title %}Select game | NumGuess{% endblock %}
+{% block content %}
+<section aria-labelledby="page-title">
+  <h1 id="page-title">Select a game</h1>
+  <p class="subtitle">One secret number, from 1 to 100. Who will guess it?</p>
+  <!-- Each link starts a fresh round in its own game mode. -->
+  <div class="choices">
+    <article class="choice">
+      <div><h2>You guess</h2><p>Find the computer's number. Get a higher or lower hint after each guess.</p></div>
+      <a class="btn" href="{{ url_for('computer_thinks') }}">Start guessing</a>
+    </article>
+    <article class="choice">
+      <div><h2>Computer guesses</h2><p>Think of a number. Help the computer find it with higher or lower clues.</p></div>
+      <a class="btn btn-secondary" href="{{ url_for('player_thinks') }}">Pick a number</a>
+    </article>
+  </div>
+</section>
+{% endblock %}

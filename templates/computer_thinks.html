@@ -1,0 +1,68 @@
+﻿{% extends "base.html" %}
+{% block title %}You guess | NumGuess{% endblock %}
+{% block content %}
+<section class="game">
+  <h1>You guess</h1>
+  <p class="subtitle">The computer picked a number from 1 to 10. Try to find it in as few guesses as you can.</p>
+  <div class="play-area">
+    <!-- A real form supports both the button and the Enter key. -->
+    <form id="guess-form">
+      <label for="guess-input">Your guess</label>
+      <input type="number" id="guess-input" min="1" max="100" step="1" required inputmode="numeric" placeholder="1–100" aria-describedby="msg-box">
+      <button class="btn full" id="submit-button" type="submit">Check guess</button>
+      <p class="attempts" id="attempts-label">Guesses: 0</p>
+    </form>
+    <p class="msg" id="msg-box" role="status" aria-live="polite"></p>
+    <div class="result" id="win-screen" hidden>
+      <h2 id="result-heading" tabindex="-1">You got it!</h2>
+      <p id="win-msg"></p>
+      <a class="btn full" href="{{ url_for('computer_thinks') }}">Play again</a>
+    </div>
+  </div>
+  <a class="back" href="{{ url_for('index') }}">Choose another game</a>
+</section>
+<script>
+  const form = document.getElementById('guess-form');
+  const input = document.getElementById('guess-input');
+  const button = document.getElementById('submit-button');
+  const message = document.getElementById('msg-box');
+  let busy = false;
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    // Ignore repeat submissions while the server updates this round.
+    if (busy) return;
+    busy = true;
+    button.disabled = true;
+    button.textContent = 'Checking…';
+    message.textContent = '';
+    message.className = 'msg';
+    try {
+      const response = await fetch('{{ url_for("computer_thinks_guess") }}', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({guess: input.value})
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) throw new Error(data.error || 'Could not check your guess. Try again.');
+      document.getElementById('attempts-label').textContent = `Guesses: ${data.attempts}`;
+      if (data.result === 'correct') {
+        form.hidden = true;
+        document.getElementById('win-screen').hidden = false;
+        document.getElementById('win-msg').textContent = `The number was ${input.value}. You found it in ${data.attempts} ${data.attempts === 1 ? 'guess' : 'guesses'}.`;
+        document.getElementById('result-heading').focus();
+      } else {
+        // textContent displays feedback as text, never executable HTML.
+        message.textContent = `${input.value} is too ${data.result === 'low' ? 'low. Try a higher number.' : 'high. Try a lower number.'}`;
+        input.value = '';
+        input.focus();
+      }
+    } catch (error) {
+      message.className = 'msg error';
+      message.textContent = error instanceof TypeError ? 'Could not connect. Check your connection and try again.' : error.message;
+    } finally {
+      busy = false;
+      button.disabled = false;
+      button.textContent = 'Check guess';
+    }
+  });
+</script>
+{% endblock %}

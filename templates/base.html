@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}NumGuess{% endblock %}</title>
+  <style>
+    /* Shared styles keep the selection screen and both games consistent. */
+    :root { color-scheme: light; --bg:#f6f7fb; --paper:#fff; --text:#202b42; --muted:#536078; --accent:#344ec5; --line:#d6dce8; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 'Segoe UI',system-ui,sans-serif; }
+    a { color:var(--accent); text-underline-offset:4px; }
+    ::selection { background:#dae2ff; color:var(--text); }
+    :focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+    [hidden] { display:none !important; }
+    nav { max-width:860px; margin:auto; padding:24px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
+    .brand { color:var(--text); font-size:20px; font-weight:750; text-decoration:none; }
+    nav > a:last-child { padding:8px 0; }
+    main { max-width:760px; margin:40px auto; padding:0 24px 40px; }
+    h1 { font-size:clamp(28px,5vw,36px); line-height:1.2; letter-spacing:-.025em; margin:0 0 12px; }
+    h2 { font-size:22px; line-height:1.3; margin:0 0 8px; }
+    p { margin:0 0 24px; }
+    .subtitle,.muted { color:var(--muted); }
+    .choices { margin-top:32px; border-top:1px solid var(--line); }
+    .choice { display:grid; grid-template-columns:1fr auto; align-items:center; gap:24px; padding:28px 0; border-bottom:1px solid var(--line); }
+    .choice p { margin:0; max-width:42ch; color:var(--muted); }
+    .btn { display:inline-flex; justify-content:center; align-items:center; min-height:48px; padding:12px 20px; border:1px solid transparent; border-radius:8px; font:inherit; font-weight:650; text-decoration:none; cursor:pointer; background:var(--accent); color:#fff; text-align:center; }
+    .btn:hover { background:#263da5; }
+    .btn-secondary { background:var(--paper); color:var(--accent); border-color:var(--line); }
+    .btn-secondary:hover { background:#edf0fc; }
+    .btn:disabled { opacity:.6; cursor:wait; }
+    .game { max-width:540px; margin:auto; }
+    .play-area { margin-top:32px; padding:28px; background:var(--paper); border:1px solid var(--line); border-radius:12px; }
+    label { display:block; font-weight:650; margin-bottom:8px; }
+    input { width:100%; min-height:120px; padding:12px; border:1px solid #8995ac; border-radius:8px; font:inherit; font-size:20px; color:var(--text); background:var(--paper); caret-color:var(--accent); }
+    input::placeholder { color:var(--muted); }
+    .full { width:100%; margin-top:16px; }
+    .attempts { margin:20px 0 0; color:var(--muted); font-variant-numeric:tabular-nums; }
+    .msg { margin:20px 0 0; padding:12px 16px; background:#edf0fc; border-radius:8px; }
+    .msg:empty { display:none; }
+    .msg.error { background:#fff0ee38; color:#a12d21; }
+    .number { display:block; font-size:72px; font-weight:750; line-height:1.2; font-variant-numeric:tabular-nums; margin:12px 0 24px; }
+    .feedback { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .feedback .correct { grid-column:1 / -1; }
+    .result h2 { margin-bottom:12px; }
+    .back { display:inline-block; margin-top:24px; padding:8px 0; }
+    @media(max-width:540px) { nav { padding:16px 20px; } main { margin-top:28px; padding:0 20px 32px; } .choice { grid-template-columns:1fr; gap:16px; } .choice .btn { justify-self:start; } .play-area { padding:20px; } }
+  </style>
+</head>
+<body>
+  <nav aria-label="Main navigation">
+    <a class="brand" href="{{ url_for('index') }}">NumGuess</a>
+    <a href="{{ url_for('index') }}" {% if request.path == '/' %}aria-current="page"{% endif %}>Select game</a>
+  </nav>
+  <main id="main-content">{% block content %}{% endblock %}</main>
+</body>
+</html>

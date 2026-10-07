@@ -1,0 +1,75 @@
+﻿{% extends "base.html" %}
+{% block title %}Computer guesses | NumGuess{% endblock %}
+{% block content %}
+<section class="game">
+  <h1>Computer guesses</h1>
+  <p class="subtitle">Think of a whole number from 1 to 100. Keep it secret, then give a clue after each guess.</p>
+  <div class="play-area">
+    <div id="game-area">
+      <div aria-live="polite" aria-atomic="true">The computer's guess is <strong class="number" id="computer-guess">{{ guess }}</strong></div>
+      <p>How does your number compare?</p>
+      <!-- Labels describe the student's number; the API describes the computer's guess. -->
+      <div class="feedback">
+        <button class="btn btn-secondary" data-answer="high">Mine is lower</button>
+        <button class="btn btn-secondary" data-answer="low">Mine is higher</button>
+        <button class="btn correct" data-answer="correct">That's my number</button>
+      </div>
+      <p class="attempts" id="attempts-label">Guess 1</p>
+    </div>
+    <p class="msg" id="msg-box" role="status"></p>
+    <div class="result" id="result-screen" hidden>
+      <h2 id="result-heading" tabindex="-1"></h2>
+      <p id="result-msg"></p>
+      <a class="btn full" href="{{ url_for('player_thinks') }}">Play again</a>
+    </div>
+  </div>
+  <a class="back" href="{{ url_for('index') }}">Choose another game</a>
+</section>
+<script>
+  const buttons = document.querySelectorAll('[data-answer]');
+  const message = document.getElementById('msg-box');
+  let busy = false;
+  buttons.forEach(button => button.addEventListener('click', () => respond(button.dataset.answer)));
+  async function respond(answer) {
+    if (busy) return;
+    busy = true;
+    buttons.forEach(button => button.disabled = true);
+    message.className = 'msg';
+    message.textContent = 'Checking your clue…';
+    try {
+      const response = await fetch('{{ url_for("player_thinks_respond") }}', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({response: answer})
+      });
+      const data = await response.json();
+      // Conflicting clues are a game outcome, even though the API returns 400.
+      if (data.result === 'impossible') {
+        finish('The clues don’t match', 'No number fits those clues. Start again with one number in mind.');
+      } else if (!response.ok || data.error) {
+        throw new Error(data.error || 'Could not check your clue. Try again.');
+      } else if (data.result === 'correct') {
+        finish('Number found!', `Your number was ${data.guess}. The computer took ${data.attempts} ${data.attempts === 1 ? 'guess' : 'guesses'}.`);
+      } else {
+        document.getElementById('computer-guess').textContent = data.guess;
+        document.getElementById('attempts-label').textContent = `Guess ${data.attempts}`;
+      }
+      message.textContent = '';
+    } catch (error) {
+      message.className = 'msg error';
+      message.textContent = error instanceof TypeError ? 'Could not connect. Check your connection and try again.' : error.message;
+    } finally {
+      busy = false;
+      buttons.forEach(button => button.disabled = false);
+    }
+  }
+  function finish(title, text) {
+    // Move keyboard focus to the outcome so the change is easy to follow.
+    document.getElementById('game-area').hidden = true;
+    document.getElementById('result-screen').hidden = false;
+    const heading = document.getElementById('result-heading');
+    heading.textContent = title;
+    document.getElementById('result-msg').textContent = text;
+    heading.focus();
+  }
+</script>
+{% endblock %}
