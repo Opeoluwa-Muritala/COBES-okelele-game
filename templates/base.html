@@ -50,7 +50,6 @@
 <body>
   <nav aria-label="Main navigation">
     <a class="brand" href="{{ url_for('index') }}">NumGuess</a>
-    <a href="{{ url_for('index') }}" {% if request.path == '/' %}aria-current="page"{% endif %}>Select game</a>
   </nav>
   <main id="main-content">{% block content %}{% endblock %}</main>
 </body>
